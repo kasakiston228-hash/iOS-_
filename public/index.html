@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#eef2f4">
+<title>Rasscheet 0.1 — iPhone</title>
+<style>
+:root{color-scheme:light;--ink:#273c53;--muted:#61758a;--purple:#5b548e;--line:#dce5e9}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;font:16px system-ui,Arial,sans-serif;color:var(--ink);background:radial-gradient(ellipse at 7% 5%,#dcdcf1 0%,transparent 40%),radial-gradient(ellipse at 95% 30%,#d6e9df 0%,transparent 44%),linear-gradient(160deg,#eaf0f5,#edf0f5 45%,#dce8e6);display:grid;place-items:center;padding:24px env(safe-area-inset-right) 24px env(safe-area-inset-left)}main{width:min(430px,100%);padding:28px 22px 30px;border:1px solid #cbd8df;border-radius:26px;background:#ffffffd9;backdrop-filter:blur(10px);box-shadow:0 18px 45px #2b49641c;text-align:center}h1{margin:4px 0 6px;font-size:42px;letter-spacing:-1.8px;color:#394d75}p{line-height:1.5;color:var(--muted)}.sub{margin:0 0 24px;letter-spacing:1.5px;font-size:13px}.mascot{width:105px;max-height:105px;object-fit:contain;margin-bottom:4px}#status{min-height:48px;margin:18px 0 8px;font-weight:600}.ok{color:#36745c!important}.err{color:#9a4d58!important}.hint{font-size:13px;margin-top:18px}.back{display:none;margin-top:14px;color:#5b548e;text-decoration:underline;background:none;border:0;font:inherit}.loading{opacity:.65;pointer-events:none}
+</style>
+</head>
+<body>
+<main id="box">
+<img class="mascot" src="/guide_mascot.png" alt="">
+<h1>Rasscheet 0.1</h1>
+<p class="sub">ГЕОДЕЗИЧЕСКИЕ ИНСТРУМЕНТЫ · iPHONE</p>
+<div id="login"><p>Войди через Telegram — сайт проверит твою активную лицензию и откроет калькулятор.</p>
+<script async src="https://telegram.org/js/telegram-widget.js?22" data-telegram-login="Rasscheet_geo_bot" data-size="large" data-userpic="false" data-onauth="onTelegramAuth(user)" data-request-access="write"></script>
+</div>
+<p id="status">Ожидаем вход через Telegram…</p>
+<p class="hint">Расчёты и проекты работают в Safari и сохраняются на устройстве. Этот сайт не использует Telegram Mini App API.</p>
+<button id="back" class="back" type="button" onclick="location.reload()">Войти другим аккаунтом</button>
+</main>
+<script>
+const statusEl=document.querySelector('#status'),loginEl=document.querySelector('#login'),backEl=document.querySelector('#back');
+let telegramUser=null;
+function status(text,cls=''){statusEl.textContent=text;statusEl.className=cls}
+async function onTelegramAuth(user){
+  telegramUser=user;
+  loginEl.classList.add('loading');
+  status('Проверяем лицензию…');
+  try{
+    const r=await fetch('/.netlify/functions/ios-auth',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({user})});
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok) throw Error(j.error||'Не удалось проверить лицензию');
+    status('Лицензия подтверждена. Загружаем калькулятор…','ok');
+    const app=await fetch('/ios-app',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({user})});
+    if(!app.ok) throw Error('Не удалось загрузить калькулятор');
+    const html=await app.text();
+    document.open();document.write(html);document.close();
+  }catch(e){
+    loginEl.classList.remove('loading');
+    status(e.message,'err');
+    backEl.style.display='inline-block';
+  }
+}
+window.onTelegramAuth=onTelegramAuth;
+</script>
+</body>
+</html>
