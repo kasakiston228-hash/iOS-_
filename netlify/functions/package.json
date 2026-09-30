@@ -1,9 +1,0 @@
-{
-  "private": true,
-  "dependencies": {
-    "@supabase/supabase-js": "^2.57.0"
-  },
-  "scripts": {
-    "build": "echo iOS Rasscheet build ready"
-  }
-}
