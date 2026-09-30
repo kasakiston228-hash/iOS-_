@@ -16,3 +16,13 @@
   [headers.values]
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "no-referrer"
+
+[[redirects]]
+  from = "/telegram-webhook"
+  to = "/.netlify/functions/telegram-webhook"
+  status = 200
+
+[[redirects]]
+  from = "/set-webhook"
+  to = "/.netlify/functions/set-webhook"
+  status = 200
