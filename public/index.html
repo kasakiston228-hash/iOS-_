@@ -51,11 +51,13 @@ async function post(url,body){
   return j;
 }
 async function launch(){
-  status('Лицензия подтверждена. Загружаем калькулятор…','ok');
-  const r=await fetch('/ios-app',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({user:telegramUser})});
-  if(!r.ok) throw Error((await r.text())||'Не удалось загрузить калькулятор');
-  const html=await r.text();
-  document.open();document.write(html);document.close();
+  status('Лицензия подтверждена. Открываем калькулятор…','ok');
+  const r=await fetch('/ios-app',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({user:telegramUser}),credentials:'same-origin'});
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok || !j.ok) throw Error(j.error||'Не удалось открыть калькулятор');
+  // После успешной серверной проверки не вставляем app.html в текущий DOM.
+  // Переходим обычной навигацией: это заметно надёжнее для iOS Safari.
+  location.replace('/ios-app');
 }
 async function checkLicense(){
   try{
